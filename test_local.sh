@@ -9,6 +9,12 @@ export RELAY_TLS=true
 
 cd "$(dirname "$0")"
 
+# 确保证书存在
+if [ ! -f certs/server.crt ]; then
+    echo "生成测试证书..."
+    python gen_cert.py
+fi
+
 cleanup() {
     echo "Cleaning up..."
     kill $PID_MOCK $PID_RELAY $PID_TUNNEL 2>/dev/null || true
