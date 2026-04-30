@@ -33,7 +33,7 @@ PID_RELAY=$!
 sleep 2
 
 echo "=== Starting tunnel client ==="
-python tunnel_client.py &
+python _server.py &
 PID_TUNNEL=$!
 sleep 3
 

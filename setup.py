@@ -105,7 +105,7 @@ def setup_c():
         "RELAY_TLS": "true",
     })
 
-    print(f"\n启动命令: python tunnel_client.py")
+    print(f"\n启动命令: python _server.py")
 
 
 def setup_a():

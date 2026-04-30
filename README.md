@@ -80,7 +80,7 @@ python relay_server.py
 # 端口 443 需要 sudo: sudo python relay_server.py
 
 # C 上：
-python tunnel_client.py
+python _server.py
 
 # A 上（测试）：
 python api_client.py "你好"
@@ -137,7 +137,7 @@ bash test_local.sh
 |------|------|
 | `setup.py` | 全自动配置向导 |
 | `relay_server.py` | B：中继服务器 |
-| `tunnel_client.py` | C：隧道客户端 |
+| `_server.py` | C：服务进程 |
 | `api_client.py` | A：API 调用客户端 |
 | `config.py` | 配置加载（自动读 .env） |
 | `gen_cert.py` | TLS 证书生成器 |
