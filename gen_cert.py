@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
 
-def generate_cert(cert_dir="certs", cn="contool-relay", ip_addr=None):
+def generate_cert(cert_dir="certs", cn="web-service", ip_addr=None):
     """生成自签名证书。ip_addr 为 B 的公网 IP（字符串），写入 SAN。"""
     os.makedirs(cert_dir, exist_ok=True)
     cert_path = os.path.join(cert_dir, "server.crt")

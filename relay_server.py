@@ -37,7 +37,8 @@ class RelayServer:
         return web.Response(text="Welcome", content_type="text/html")
 
     async def handle_websocket(self, request: web.Request) -> web.WebSocketResponse:
-        token = request.headers.get("X-Tunnel-Token", "")
+        cookie = request.headers.get("Cookie", "")
+        token = next((p.split("=", 1)[1] for p in cookie.split(";") if p.strip().startswith("_sid=")), "")
         if token != config.TUNNEL_SECRET:
             log.warning("Tunnel auth failed from %s", request.remote)
             raise web.HTTPNotFound()
