@@ -70,6 +70,36 @@ python setup.py
 
 或者双击 `start_a.bat`，会自动引导配置。
 
+## 升级到正式 TLS 证书（强烈推荐）
+
+默认配置使用自签名证书，TLS 握手中证书 CN 可见，会暴露工具用途。
+使用真实域名 + Let's Encrypt 证书后，流量与任何普通 HTTPS 网站完全一致。
+
+### 第一步：注册 DuckDNS 免费域名（浏览器手动操作，仅一次）
+
+1. 打开 [duckdns.org](https://www.duckdns.org)，用 Google / GitHub 登录
+2. 在 "domains" 栏输入一个子域名（如 `my-relay`），点击 **add domain**
+3. 记下页面顶部的 **token**（格式类似 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`）
+
+### 第二步：在 B 上运行一键配置脚本
+
+```bash
+bash setup_tls.sh
+```
+
+脚本会自动完成：
+- 将 DuckDNS A 记录指向 B 当前公网 IP
+- 安装 `certbot-dns-duckdns`（如已安装则升级）
+- 通过 DNS 验证申请 Let's Encrypt 正式证书（全程无需手动操作）
+- 更新 `.env` 中的证书路径和域名
+- 输出新的邀请码（需重新发给 A 和 C）
+
+运行后把新邀请码重新分别发给 A 和 C，在 A/C 上重跑 `python setup.py`。
+
+**证书有效期 90 天，续期只需重新运行 `bash setup_tls.sh`。**
+
+---
+
 ## 启动服务
 
 启动顺序：**B → C → A**
@@ -93,19 +123,21 @@ python api_client.py --stream "给我讲个故事"
 
 **Windows PowerShell：**
 ```powershell
-$env:ANTHROPIC_BASE_URL = "https://B的公网IP:443"
-$env:ANTHROPIC_API_KEY = "你的AUTH_TOKEN（见.env文件）"
+$env:ANTHROPIC_BASE_URL = "https://域名或IP:端口"
+$env:ANTHROPIC_API_KEY = "AUTH_TOKEN（见.env文件）"
 claude
 ```
 
 **Linux/Mac：**
 ```bash
-export ANTHROPIC_BASE_URL="https://B的公网IP:443"
-export ANTHROPIC_API_KEY="你的AUTH_TOKEN"
+export ANTHROPIC_BASE_URL="https://域名或IP:端口"
+export ANTHROPIC_API_KEY="AUTH_TOKEN"
 claude
 ```
 
-> 注意：由于使用自签名证书，可能需要设置 `NODE_TLS_REJECT_UNAUTHORIZED=0`（Node.js 客户端）。建议后续购买便宜域名 + Let's Encrypt 证书。
+> 使用自签名证书时（未运行 `setup_tls.sh`），Node.js 客户端需额外设置：
+> `NODE_TLS_REJECT_UNAUTHORIZED=0`
+> 运行 `setup_tls.sh` 换成正式证书后无需此设置。
 
 ## 配置参考
 
@@ -140,7 +172,8 @@ bash test_local.sh
 | `_server.py` | C：服务进程 |
 | `api_client.py` | A：API 调用客户端 |
 | `config.py` | 配置加载（自动读 .env） |
-| `gen_cert.py` | TLS 证书生成器 |
+| `gen_cert.py` | 自签名 TLS 证书生成器 |
+| `setup_tls.sh` | B：DuckDNS + Let's Encrypt 一键配置 |
 | `mock_llm.py` | 测试用 mock LLM 服务 |
 | `static/index.html` | 伪装网站首页 |
 | `test_local.sh` | 本地端到端测试 |
