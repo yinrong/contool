@@ -91,21 +91,6 @@ cd ~/contool && source venv/bin/activate
 nohup python _server.py > server.log 2>&1 &
 ```
 
-## 配置参考
-
-`.env` 由 `setup.py` 自动生成：
-
-| 字段 | 说明 |
-|------|------|
-| RELAY_HOST | B 监听地址 |
-| RELAY_PORT | B 监听端口 |
-| RELAY_ADDR | B 的域名 |
-| AUTH_TOKEN | A→B 访问凭证 |
-| TUNNEL_SECRET | C→B 隧道密钥 |
-| INTERNAL_LLM_BASE | C 内网 LLM 地址 |
-| INTERNAL_LLM_KEY | C 内网 LLM API Key |
-| CERT_FILE / KEY_FILE | TLS 证书路径 |
-
 ## 文件说明
 
 | 文件 | 用途 |
