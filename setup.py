@@ -45,7 +45,10 @@ def setup_b():
     port_str = input("监听端口 [443]: ").strip()
     port = int(port_str) if port_str else 443
 
-    auth_token = "sk-" + secrets.token_urlsafe(32)
+    auth_token = input("LLM API Key（从 LLM 服务提供人获取）: ").strip()
+    if not auth_token:
+        print("错误: LLM API Key 不能为空")
+        sys.exit(1)
     tunnel_secret = "tun-" + secrets.token_urlsafe(32)
 
     # 生成 TLS 证书
