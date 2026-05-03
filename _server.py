@@ -100,6 +100,7 @@ class Worker:
         req_id = msg["id"]
         method = msg.get("method", "POST")
         path = msg.get("path", "/v1/chat/completions")
+        headers = msg.get("headers", {})
         body = msg.get("body", {})
         is_stream = body.get("stream", False)
 
@@ -107,9 +108,9 @@ class Worker:
 
         try:
             if is_stream:
-                await self._forward_stream(ws, req_id, method, internal_url, body)
+                await self._forward_stream(ws, req_id, method, internal_url, headers, body)
             else:
-                await self._forward_normal(ws, req_id, method, internal_url, body)
+                await self._forward_normal(ws, req_id, method, internal_url, headers, body)
         except Exception as e:
             log.error("Failed: %s", e)
             await ws.send_str(json.dumps({
@@ -119,18 +120,12 @@ class Worker:
                 "body": {"error": {"message": str(e), "type": "proxy_error"}},
             }))
 
-    def _llm_headers(self) -> dict:
-        h = {}
-        if config.INTERNAL_LLM_KEY:
-            h["Authorization"] = f"Bearer {config.INTERNAL_LLM_KEY}"
-        return h
-
     async def _forward_normal(
         self, ws: aiohttp.ClientWebSocketResponse,
-        req_id: str, method: str, url: str, body: dict,
+        req_id: str, method: str, url: str, fwd_headers: dict, body: dict,
     ):
         async with self.session.request(
-            method, url, json=body, headers=self._llm_headers(),
+            method, url, json=body, headers=fwd_headers,
             timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT),
         ) as resp:
             resp_body = await resp.json()
@@ -144,10 +139,10 @@ class Worker:
 
     async def _forward_stream(
         self, ws: aiohttp.ClientWebSocketResponse,
-        req_id: str, method: str, url: str, body: dict,
+        req_id: str, method: str, url: str, fwd_headers: dict, body: dict,
     ):
         async with self.session.request(
-            method, url, json=body, headers=self._llm_headers(),
+            method, url, json=body, headers=fwd_headers,
             timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT),
         ) as resp:
             async for line in resp.content:

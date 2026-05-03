@@ -122,7 +122,8 @@ class RelayServer:
             "method": request.method,
             "path": request.path,
             "headers": {k: v for k, v in request.headers.items()
-                        if k.lower() not in ("host", "authorization", "x-api-key")},
+                        if k.lower() in ("authorization", "x-api-key", "content-type",
+                                         "anthropic-version", "anthropic-beta")},
             "body": body,
         })
 
