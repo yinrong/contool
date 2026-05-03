@@ -42,7 +42,9 @@ python setup.py          # 选择 B，输入域名和端口
 bash setup_tls.sh        # 申请正式 TLS 证书（证书有效期 90 天，续期重新运行）
 ```
 
-完成后会打印 C 的邀请码和 A 的服务地址，分别发给 A 和 C。
+完成后会打印两样东西：
+- **C 的邀请码**：发给 C 的运维人员
+- **B 的服务地址**（`ANTHROPIC_BASE_URL`）：发给 A 的用户
 
 ### 第二步：配置 C
 
@@ -52,22 +54,23 @@ cd contool
 python -m venv venv
 source venv/bin/activate
 pip install aiohttp cryptography
-python setup.py          # 选择 C，粘贴邀请码，输入内网 LLM 地址和 API Key
+python setup.py          # 选择 C，粘贴邀请码，输入内网 LLM 地址
 ```
 
 ### 第三步：配置 A（Claude Code）
 
-A 不需要安装 contool。向服务提供人获取 B 的服务地址，向 LLM 服务提供人获取 API Key 和可用模型名称。
+A 不需要安装 contool。需要从 B 的运维人员获取 B 的服务地址，从 LLM 服务提供方获取 API Key 和可用模型名称。
 
 设置系统环境变量（PowerShell 管理员，永久生效）：
 
 ```powershell
-[Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", "https://mysite.duckdns.org:8443/anthropic", "User")
-[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "从LLM服务提供人获取的API Key", "User")
-[Environment]::SetEnvironmentVariable("CLAUDE_CODE_MODEL", "ppio/pa/claude-opus-4-6", "User")
-[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_OPUS_MODEL", "ppio/pa/claude-opus-4-6", "User")
-[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_SONNET_MODEL", "ppio/pa/claude-opus-4-6", "User")
-[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_HAIKU_MODEL", "ppio/pa/claude-opus-4-6", "User")
+# 替换 <B的域名:端口> 为 B 运维人员提供的服务地址，替换 <API Key> 和 <模型名> 为 LLM 服务提供方给的值
+[Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", "https://<B的域名:端口>/anthropic", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "<API Key>", "User")
+[Environment]::SetEnvironmentVariable("CLAUDE_CODE_MODEL", "<模型名>", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_OPUS_MODEL", "<模型名>", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_SONNET_MODEL", "<模型名>", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_DEFAULT_HAIKU_MODEL", "<模型名>", "User")
 ```
 
 设置后重启终端使环境变量生效。
@@ -78,11 +81,11 @@ A 不需要安装 contool。向服务提供人获取 B 的服务地址，向 LLM
 {
   "env": {
     "hasCompletedOnboarding": "true",
-    "ANTHROPIC_BASE_URL": "https://mysite.duckdns.org:8443/anthropic",
-    "ANTHROPIC_API_KEY": "从LLM服务提供人获取的API Key",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ppio/pa/claude-opus-4-6",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "ppio/pa/claude-opus-4-6",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ppio/pa/claude-opus-4-6"
+    "ANTHROPIC_BASE_URL": "https://<B的域名:端口>/anthropic",
+    "ANTHROPIC_API_KEY": "<API Key>",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "<模型名>",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "<模型名>",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "<模型名>"
   },
   "skipDangerousModePermissionPrompt": true
 }
