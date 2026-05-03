@@ -13,7 +13,7 @@ echo "前提：已在 https://www.duckdns.org 注册并创建子域名"
 echo ""
 
 read -p "DuckDNS 子域名（不含 .duckdns.org）: " SUBDOMAIN
-read -p "DuckDNS Token: " DUCKDNS_TOKEN
+read -p "DuckDNS Token（登录 duckdns.org 后页面顶部显示）: " DUCKDNS_TOKEN
 read -p "邮箱（Let's Encrypt 续期通知用）: " EMAIL
 
 DOMAIN="${SUBDOMAIN}.duckdns.org"
