@@ -5,17 +5,17 @@
 ## 架构
 
 ```
-A (校园网/Windows)          B (家里, 公网IP)              C (公司内网)
+A (Claude Code 客户端)      B (公网 IP 服务器)              C (公司内网)
      │                          │                           │
      │ HTTPS 请求               │     WSS 出站连接          │
-     │ /v1/chat/completions ──► │ ◄── /ws/notifications     │
+     │ /anthropic/v1/messages ► │ ◄── /ws/notifications     │
      │ (像调普通 API)           │ (像普通 WebSocket 应用)    │
      │                          │                           │
      │ ◄── JSON 响应 ────────── │ ──► 内网 LLM API ──────►  │
 ```
 
-- **A**：用户端（Windows 11 / Linux / Mac），发送 API 请求
-- **B**：中继服务器，有公网 IP，对外是普通网站
+- **A**：Claude Code 客户端，可以和 B 在同一台机器，也可以在任意网络
+- **B**：中继服务器，需要有公网 IP（如家里的电脑），对外是普通网站
 - **C**：隧道客户端，在公司内网，主动出站连接 B
 
 ## 快速开始
