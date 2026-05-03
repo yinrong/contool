@@ -97,13 +97,19 @@ def setup_c():
         print("错误: LLM API 地址不能为空")
         sys.exit(1)
 
-    _write_env({
+    llm_key = input("内网 LLM API Key (如不需要认证直接回车): ").strip()
+
+    env = {
         "RELAY_ADDR": data["addr"],
         "RELAY_PORT": str(data["port"]),
         "TUNNEL_SECRET": data["tunnel_secret"],
         "INTERNAL_LLM_BASE": llm_url,
         "RELAY_TLS": "true",
-    })
+    }
+    if llm_key:
+        env["INTERNAL_LLM_KEY"] = llm_key
+
+    _write_env(env)
 
     print(f"\n启动命令: python _server.py")
 

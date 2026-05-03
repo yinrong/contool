@@ -119,12 +119,19 @@ class Worker:
                 "body": {"error": {"message": str(e), "type": "proxy_error"}},
             }))
 
+    def _llm_headers(self) -> dict:
+        h = {}
+        if config.INTERNAL_LLM_KEY:
+            h["Authorization"] = f"Bearer {config.INTERNAL_LLM_KEY}"
+        return h
+
     async def _forward_normal(
         self, ws: aiohttp.ClientWebSocketResponse,
         req_id: str, method: str, url: str, body: dict,
     ):
         async with self.session.request(
-            method, url, json=body, timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT)
+            method, url, json=body, headers=self._llm_headers(),
+            timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT),
         ) as resp:
             resp_body = await resp.json()
             await ws.send_str(json.dumps({
@@ -140,7 +147,8 @@ class Worker:
         req_id: str, method: str, url: str, body: dict,
     ):
         async with self.session.request(
-            method, url, json=body, timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT)
+            method, url, json=body, headers=self._llm_headers(),
+            timeout=aiohttp.ClientTimeout(total=config.REQUEST_TIMEOUT),
         ) as resp:
             async for line in resp.content:
                 decoded = line.decode() if isinstance(line, bytes) else line

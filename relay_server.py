@@ -213,6 +213,7 @@ def create_app() -> web.Application:
 
     app.router.add_route("*", "/v1/{path:.*}", relay.handle_api)
     app.router.add_route("*", "/api/{path:.*}", relay.handle_api)
+    app.router.add_route("*", "/anthropic/{path:.*}", relay.handle_api)
 
     app.router.add_route("*", "/{path:.*}", relay.handle_catch_all)
 

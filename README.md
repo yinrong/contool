@@ -65,19 +65,30 @@ python setup.py
 # 选择 C，粘贴邀请码，输入内网 LLM API 地址
 ```
 
-### 第三步：在 A 上配置（Windows 11）
+### 第三步：在 A 上配置 Claude Code（Windows 11 / Linux / Mac）
 
-```powershell
-git clone git@github.com:yinrong/contool.git
-cd contool
-python -m venv venv
-venv\Scripts\activate
-pip install aiohttp cryptography
-python setup.py
-# 选择 A，粘贴邀请码
+A 不需要安装 contool，只需要安装 Claude Code 并配置指向 B 的中继地址。
+
+配置 B 时 `setup.py` 会打印 A 的连接信息，包含地址、端口和 AUTH_TOKEN。
+将以下内容写入 A 机器的 `~/.claude/settings.json`：
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://B的域名或IP:端口/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "B生成的AUTH_TOKEN（从邀请码或B的.env获取）",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ppio/pa/claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "ppio/pa/claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ppio/pa/claude-opus-4-6"
+  }
+}
 ```
 
-或者双击 `start_a.bat`，会自动引导配置。
+然后直接运行 `claude` 即可。
+
+> **AUTH_TOKEN 从哪来？** 在第一步配置 B 时由 `setup.py` 自动生成并打印。它是中继的访问凭证，不是内网 LLM 的 API key。真正的 LLM API key 只配在 C 上，不出公司内网。
+>
+> **Model 名称从哪来？** 由 C 端内网 LLM 服务决定，向 LLM 服务管理员确认。
 
 ## 升级到正式 TLS 证书（强烈推荐）
 
@@ -111,55 +122,28 @@ bash setup_tls.sh
 
 ## 启动服务
 
-启动顺序：**B → C → A**
+启动顺序：**B → C**，A 无需启动服务，直接用 Claude Code。
 
 ```bash
-# B 上（进入 venv 后）：
+# B 上：
 cd ~/contool && source venv/bin/activate
 nohup python relay_server.py > relay.log 2>&1 &
 # 用 nohup 后台运行，SSH 断开不会中断服务
 # 查看日志：tail -f relay.log
 # 停止：kill $(pgrep -f relay_server.py)
 
-# C 上（进入 venv 后）：
+# C 上：
 cd ~/contool && source venv/bin/activate
 nohup python _server.py > server.log 2>&1 &
 
-# A 上（Windows，测试）：
-cd contool
-venv\Scripts\activate
-python api_client.py "你好"
-python api_client.py --stream "给我讲个故事"
-# AUTH_TOKEN 已由 setup.py 从邀请码写入 .env，无需手动配置
-
-# A 上（Linux/Mac，测试）：
-cd ~/contool && source venv/bin/activate
-python api_client.py "你好"
-python api_client.py --stream "给我讲个故事"
-```
-
-> **提示**：如果有 `tmux` 或 `screen`，也可以用它们代替 `nohup` 管理长期进程。
-
-## Claude Code 集成
-
-在 A 机器上设置环境变量，让 Claude Code 通过中继访问 LLM：
-
-**Windows PowerShell：**
-```powershell
-$env:ANTHROPIC_BASE_URL = "https://域名或IP:端口"
-$env:ANTHROPIC_API_KEY = "AUTH_TOKEN（见.env文件）"
+# A 上：直接运行 claude（已在第三步配置好 settings.json）
 claude
 ```
 
-**Linux/Mac：**
-```bash
-export ANTHROPIC_BASE_URL="https://域名或IP:端口"
-export ANTHROPIC_API_KEY="AUTH_TOKEN"
-claude
-```
+> **提示**：如果有 `tmux` 或 `screen`，也可以用它们代替 `nohup` 管理 B/C 的长期进程。
 
-> 使用自签名证书时（未运行 `setup_tls.sh`），Node.js 客户端需额外设置：
-> `NODE_TLS_REJECT_UNAUTHORIZED=0`
+> **自签名证书注意**：未运行 `setup_tls.sh` 时，Claude Code（Node.js）需额外设置：
+> 在 `settings.json` 的 `env` 中加入 `"NODE_TLS_REJECT_UNAUTHORIZED": "0"`。
 > 运行 `setup_tls.sh` 换成正式证书后无需此设置。
 
 ## 配置参考
@@ -174,6 +158,7 @@ claude
 | AUTH_TOKEN | A→B 认证令牌 | sk-xxx |
 | TUNNEL_SECRET | C→B 隧道密钥 | tun-xxx |
 | INTERNAL_LLM_BASE | C 内网 LLM 地址 | https://10.0.1.50:8080 |
+| INTERNAL_LLM_KEY | C 内网 LLM API Key | sk-xxx（无需认证则留空） |
 | RELAY_TLS | 是否启用 TLS | auto/true/false |
 | CERT_FILE | TLS 证书路径 | certs/server.crt |
 | KEY_FILE | TLS 私钥路径 | certs/server.key |
