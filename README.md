@@ -23,10 +23,12 @@ A (Claude Code 客户端)      B (claude-code-proxy)           C (公司内网)
 
 - **A**：安装 Claude Code（`npm install -g @anthropic-ai/claude-code`），无需 Python
 - **B、C**：Python 3.10+
-- **B**：需要一个指向 B 公网 IP 的域名（用于 TLS 证书申请）
-- **B 在路由器/NAT 后面**：在路由器设置端口转发，外部 8443 → B 内网 IP:8443
 
-> 国内运营商封锁 80/443，使用 **8443**。
+### 准备 B 的网络环境（已完成可跳过）
+
+1. B 需要一个指向其公网 IP 的域名（用于 TLS 证书）
+2. B 在路由器/NAT 后面时，设置端口转发：外部 8443 → B 内网 IP:8443
+3. 国内运营商封锁 80/443，使用 **8443**
 
 ### 第一步：配置 B
 
@@ -37,12 +39,10 @@ python -m venv venv
 source venv/bin/activate
 pip install aiohttp cryptography
 python setup.py          # 选择 B，输入域名和端口
-bash setup_tls.sh        # 输入 DuckDNS 子域名、token、邮箱，自动申请正式证书
+bash setup_tls.sh        # 申请正式 TLS 证书（证书有效期 90 天，续期重新运行）
 ```
 
 完成后会打印两个邀请码和 AUTH_TOKEN，分别发给 A 和 C。
-
-> 证书有效期 90 天，续期重新运行 `bash setup_tls.sh`。
 
 ### 第二步：配置 C
 
