@@ -66,7 +66,7 @@ A 不需要安装 contool。向服务提供人获取 B 的服务地址，向 LLM
   "env": {
     "hasCompletedOnboarding": "true",
     "ANTHROPIC_BASE_URL": "https://mysite.duckdns.org:8443/anthropic",
-    "ANTHROPIC_AUTH_TOKEN": "从LLM服务提供人获取的API Key",
+    "ANTHROPIC_API_KEY": "从LLM服务提供人获取的API Key",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "ppio/pa/claude-opus-4-6",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ppio/pa/claude-opus-4-6",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ppio/pa/claude-opus-4-6"
