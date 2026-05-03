@@ -42,7 +42,7 @@ python setup.py          # 选择 B，输入域名和端口
 bash setup_tls.sh        # 申请正式 TLS 证书（证书有效期 90 天，续期重新运行）
 ```
 
-完成后会打印两个邀请码和 AUTH_TOKEN，分别发给 A 和 C。
+完成后会打印 C 的邀请码和 A 的连接信息（地址、AUTH_TOKEN），分别发给 A 和 C。
 
 ### 第二步：配置 C
 
