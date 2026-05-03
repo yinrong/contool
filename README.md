@@ -24,16 +24,21 @@ A (校园网/Windows)          B (家里, 公网IP)              C (公司内网
 
 三台机器都需要：
 - Python 3.10+
-- 安装依赖：`pip install aiohttp cryptography`
+
+> **B 在路由器/NAT 后面？** 需要在路由器管理页面设置端口转发，将外部端口（如 8443）转发到 B 的内网 IP 和端口。
+>
+> **家用宽带注意**：国内运营商普遍封锁 80/443 端口，推荐使用 **8443**（标准 HTTPS 备用端口，不会引起注意）。
 
 ### 第一步：在 B 上配置（有公网 IP 的机器）
 
 ```bash
 git clone git@github.com:yinrong/contool.git
 cd contool
+python -m venv venv
+source venv/bin/activate
 pip install aiohttp cryptography
 python setup.py
-# 选择 B，输入公网 IP 和端口
+# 选择 B，输入公网 IP（或域名）和端口
 # 会自动生成密钥、证书，并打印两个邀请码
 ```
 
@@ -53,6 +58,8 @@ eyJyb2xlIjoiQyIsImFkZHIiOi...
 ```bash
 git clone git@github.com:yinrong/contool.git
 cd contool
+python -m venv venv
+source venv/bin/activate
 pip install aiohttp cryptography
 python setup.py
 # 选择 C，粘贴邀请码，输入内网 LLM API 地址
@@ -63,6 +70,8 @@ python setup.py
 ```powershell
 git clone git@github.com:yinrong/contool.git
 cd contool
+python -m venv venv
+venv\Scripts\activate
 pip install aiohttp cryptography
 python setup.py
 # 选择 A，粘贴邀请码
@@ -105,17 +114,31 @@ bash setup_tls.sh
 启动顺序：**B → C → A**
 
 ```bash
-# B 上：
-python relay_server.py
-# 端口 443 需要 sudo: sudo python relay_server.py
+# B 上（进入 venv 后）：
+cd ~/contool && source venv/bin/activate
+nohup python relay_server.py > relay.log 2>&1 &
+# 用 nohup 后台运行，SSH 断开不会中断服务
+# 查看日志：tail -f relay.log
+# 停止：kill $(pgrep -f relay_server.py)
 
-# C 上：
-python _server.py
+# C 上（进入 venv 后）：
+cd ~/contool && source venv/bin/activate
+nohup python _server.py > server.log 2>&1 &
 
-# A 上（测试）：
+# A 上（Windows，测试）：
+cd contool
+venv\Scripts\activate
+python api_client.py "你好"
+python api_client.py --stream "给我讲个故事"
+# AUTH_TOKEN 已由 setup.py 从邀请码写入 .env，无需手动配置
+
+# A 上（Linux/Mac，测试）：
+cd ~/contool && source venv/bin/activate
 python api_client.py "你好"
 python api_client.py --stream "给我讲个故事"
 ```
+
+> **提示**：如果有 `tmux` 或 `screen`，也可以用它们代替 `nohup` 管理长期进程。
 
 ## Claude Code 集成
 
@@ -146,8 +169,8 @@ claude
 | 字段 | 说明 | 示例 |
 |------|------|------|
 | RELAY_HOST | B 监听地址 | 0.0.0.0 |
-| RELAY_PORT | B 监听端口 | 443 |
-| RELAY_ADDR | B 的公网 IP | 1.2.3.4 |
+| RELAY_PORT | B 监听端口 | 8443 |
+| RELAY_ADDR | B 的公网 IP 或域名 | mysite.duckdns.org |
 | AUTH_TOKEN | A→B 认证令牌 | sk-xxx |
 | TUNNEL_SECRET | C→B 隧道密钥 | tun-xxx |
 | INTERNAL_LLM_BASE | C 内网 LLM 地址 | https://10.0.1.50:8080 |
@@ -181,7 +204,7 @@ bash test_local.sh
 
 ## 伪装策略
 
-- B 对外仅 443 端口，未认证访问返回正常博客网站
+- B 对外仅一个 HTTPS 端口（如 8443），未认证访问返回正常博客网站
 - C→B 的 WebSocket 连接与普通 Web 应用无异
 - 所有流量标准 TLS 加密，无特殊协议指纹
 - 心跳间隔随机化，定期重连避免长连接特征
