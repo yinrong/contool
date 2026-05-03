@@ -23,7 +23,7 @@ A (Claude Code 客户端)      B (claude-code-proxy)           C (公司内网)
 
 - **A**：安装 Claude Code（`npm install -g @anthropic-ai/claude-code`），无需 Python
 - **B、C**：Python 3.10+
-- **B**：需要一个域名。在 [duckdns.org](https://www.duckdns.org) 用 Google/GitHub 登录，创建一个子域名（如 `my-relay`），页面顶部会显示你的 DuckDNS token（`setup_tls.sh` 运行时会用到）
+- **B**：需要一个指向 B 公网 IP 的域名（用于 TLS 证书申请）
 - **B 在路由器/NAT 后面**：在路由器设置端口转发，外部 8443 → B 内网 IP:8443
 
 > 国内运营商封锁 80/443，使用 **8443**。
