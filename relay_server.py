@@ -98,7 +98,8 @@ class RelayServer:
 
     async def handle_api(self, request: web.Request) -> web.StreamResponse:
         auth = request.headers.get("Authorization", "")
-        if auth != f"Bearer {config.AUTH_TOKEN}":
+        api_key = request.headers.get("x-api-key", "")
+        if auth != f"Bearer {config.AUTH_TOKEN}" and api_key != config.AUTH_TOKEN:
             raise web.HTTPNotFound()
 
         if self.tunnel_ws is None or self.tunnel_ws.closed:
@@ -121,7 +122,7 @@ class RelayServer:
             "method": request.method,
             "path": request.path,
             "headers": {k: v for k, v in request.headers.items()
-                        if k.lower() not in ("host", "authorization", "x-tunnel-token")},
+                        if k.lower() not in ("host", "authorization", "x-api-key")},
             "body": body,
         })
 

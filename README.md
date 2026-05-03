@@ -1,11 +1,11 @@
-# contool - 隐蔽 LLM API 中继
+# contool - 隐蔽 LLM API 中继（claude-code-proxy）
 
 通过中间节点，将公司内网的大模型 API 安全中继到外部，所有流量伪装为正常 HTTPS 网站访问。
 
 ## 架构
 
 ```
-A (Claude Code 客户端)      B (公网 IP 服务器)              C (公司内网)
+A (Claude Code 客户端)      B (claude-code-proxy)           C (公司内网)
      │                          │                           │
      │ HTTPS 请求               │     WSS 出站连接          │
      │ /anthropic/v1/messages ► │ ◄── /ws/notifications     │
@@ -15,15 +15,15 @@ A (Claude Code 客户端)      B (公网 IP 服务器)              C (公司内
 ```
 
 - **A**：Claude Code 客户端，可以和 B 在同一台机器，也可以在任意网络
-- **B**：中继服务器，需要有公网 IP（如家里的电脑），对外是普通网站
+- **B**：claude-code-proxy，需要有公网 IP（如家里的电脑），对外是普通 HTTPS 网站
 - **C**：隧道客户端，在公司内网，主动出站连接 B
 
 ## 快速开始
 
 ### 前提条件
 
-三台机器都需要：
-- Python 3.10+
+- **A**：安装 Claude Code（`npm install -g @anthropic-ai/claude-code`），无需 Python
+- **B、C**：Python 3.10+
 
 > **B 在路由器/NAT 后面？** 需要在路由器管理页面设置端口转发，将外部端口（如 8443）转发到 B 的内网 IP 和端口。
 >
@@ -67,28 +67,45 @@ python setup.py
 
 ### 第三步：在 A 上配置 Claude Code（Windows 11 / Linux / Mac）
 
-A 不需要安装 contool，只需要安装 Claude Code 并配置指向 B 的中继地址。
+A 不需要安装 contool，只需要 Claude Code。
 
-配置 B 时 `setup.py` 会打印 A 的连接信息，包含地址、端口和 AUTH_TOKEN。
+向服务提供人（B+C 的运营者）获取以下信息：
+- **服务地址**：B 的域名或 IP + 端口
+- **AUTH_TOKEN**：访问凭证
+- **可用模型列表**：如 `ppio/pa/claude-opus-4-6`
+
 将以下内容写入 A 机器的 `~/.claude/settings.json`：
 
 ```json
 {
   "env": {
+    "hasCompletedOnboarding": "true",
     "ANTHROPIC_BASE_URL": "https://B的域名或IP:端口/anthropic",
-    "ANTHROPIC_AUTH_TOKEN": "B生成的AUTH_TOKEN（从邀请码或B的.env获取）",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ppio/pa/claude-opus-4-6",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "ppio/pa/claude-opus-4-6",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ppio/pa/claude-opus-4-6"
-  }
+    "ANTHROPIC_AUTH_TOKEN": "从服务提供人获取的AUTH_TOKEN",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "模型名称（从服务提供人获取）",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "模型名称（从服务提供人获取）",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "模型名称（从服务提供人获取）"
+  },
+  "skipDangerousModePermissionPrompt": true
 }
 ```
 
 然后直接运行 `claude` 即可。
 
-> **AUTH_TOKEN 从哪来？** 在第一步配置 B 时由 `setup.py` 自动生成并打印。它是中继的访问凭证，不是内网 LLM 的 API key。真正的 LLM API key 只配在 C 上，不出公司内网。
->
-> **Model 名称从哪来？** 由 C 端内网 LLM 服务决定，向 LLM 服务管理员确认。
+> **示例**：如果 B 的地址是 `mysite.duckdns.org:8443`，AUTH_TOKEN 是 `sk-xxx`，模型是 `ppio/pa/claude-opus-4-6`：
+> ```json
+> {
+>   "env": {
+>     "hasCompletedOnboarding": "true",
+>     "ANTHROPIC_BASE_URL": "https://mysite.duckdns.org:8443/anthropic",
+>     "ANTHROPIC_AUTH_TOKEN": "sk-xxx",
+>     "ANTHROPIC_DEFAULT_OPUS_MODEL": "ppio/pa/claude-opus-4-6",
+>     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ppio/pa/claude-opus-4-6",
+>     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ppio/pa/claude-opus-4-6"
+>   },
+>   "skipDangerousModePermissionPrompt": true
+> }
+> ```
 
 ## 升级到正式 TLS 证书（强烈推荐）
 
@@ -175,17 +192,13 @@ bash test_local.sh
 
 | 文件 | 用途 |
 |------|------|
-| `setup.py` | 全自动配置向导 |
-| `relay_server.py` | B：中继服务器 |
-| `_server.py` | C：服务进程 |
-| `api_client.py` | A：API 调用客户端 |
+| `setup.py` | B/C 全自动配置向导 |
+| `relay_server.py` | B：claude-code-proxy 服务 |
+| `_server.py` | C：隧道服务进程 |
 | `config.py` | 配置加载（自动读 .env） |
 | `gen_cert.py` | 自签名 TLS 证书生成器 |
 | `setup_tls.sh` | B：DuckDNS + Let's Encrypt 一键配置 |
-| `mock_llm.py` | 测试用 mock LLM 服务 |
 | `static/index.html` | 伪装网站首页 |
-| `test_local.sh` | 本地端到端测试 |
-| `start_a.bat` | Windows A 端启动脚本 |
 
 ## 伪装策略
 
@@ -193,4 +206,4 @@ bash test_local.sh
 - C→B 的 WebSocket 连接与普通 Web 应用无异
 - 所有流量标准 TLS 加密，无特殊协议指纹
 - 心跳间隔随机化，定期重连避免长连接特征
-- API 路径使用 OpenAI 标准格式 `/v1/chat/completions`
+- API 路径支持 Anthropic (`/anthropic/*`) 和 OpenAI (`/v1/*`) 标准格式
