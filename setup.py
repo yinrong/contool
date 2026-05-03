@@ -65,18 +65,17 @@ def setup_b():
         "KEY_FILE": "certs/server.key",
     })
 
-    # 生成邀请码
-    invite_a = _encode_invite({"role": "A", "addr": ip, "port": port, "auth_token": auth_token})
+    # 生成 C 的邀请码
     invite_c = _encode_invite({"role": "C", "addr": ip, "port": port, "tunnel_secret": tunnel_secret})
 
     print("\n" + "=" * 60)
-    print("配置完成！请把下面的邀请码分别发给 A 和 C：")
+    print("配置完成！")
     print("=" * 60)
-    print(f"\n【给 A（用户端）的邀请码】:")
-    print(invite_a)
-    print(f"\n【给 C（隧道客户端）的邀请码】:")
+    print(f"\n【给 C 的邀请码】:")
     print(invite_c)
-    print("\n" + "=" * 60)
+    print(f"\n【给 A 的连接信息】:")
+    print(f"  服务地址: https://{ip}:{port}/anthropic")
+    print(f"  中继访问密钥: {auth_token}")
     print(f"\n启动命令: python relay_server.py")
     if port < 1024:
         print(f"注意: 端口 {port} 需要 root 权限，用 sudo python relay_server.py")
@@ -108,51 +107,23 @@ def setup_c():
     print(f"\n启动命令: python _server.py")
 
 
-def setup_a():
-    print("\n=== 配置 A（用户端） ===\n")
-
-    code = input("粘贴邀请码（从 B 获取的 A 码）: ").strip()
-    data = _decode_invite(code)
-
-    if data.get("role") != "A":
-        print("错误: 这不是给 A 的邀请码，请使用 B 生成的 A 码。")
-        sys.exit(1)
-
-    _write_env({
-        "RELAY_ADDR": data["addr"],
-        "RELAY_PORT": str(data["port"]),
-        "AUTH_TOKEN": data["auth_token"],
-        "RELAY_TLS": "true",
-    })
-
-    print(f"\n使用方法:")
-    print(f"  python api_client.py \"你好\"")
-    print(f"  python api_client.py --stream \"给我讲个故事\"")
-    print(f"\n或在 Claude Code 中配置:")
-    print(f"  ANTHROPIC_BASE_URL=https://{data['addr']}:{data['port']}")
-    print(f"  ANTHROPIC_API_KEY={data['auth_token']}")
-
-
 def main():
     print("=" * 40)
     print("   contool 配置向导")
     print("=" * 40)
     print("\n选择本机角色:")
-    print("  [B] 中继服务器（有公网 IP 的机器，第一个配置）")
+    print("  [B] claude-code-proxy（有公网 IP 的机器，第一个配置）")
     print("  [C] 隧道客户端（公司内网机器）")
-    print("  [A] 用户端（校园网 / Windows）")
     print()
 
-    role = input("输入角色 (A/B/C): ").strip().upper()
+    role = input("输入角色 (B/C): ").strip().upper()
 
     if role == "B":
         setup_b()
     elif role == "C":
         setup_c()
-    elif role == "A":
-        setup_a()
     else:
-        print("错误: 请输入 A、B 或 C")
+        print("错误: 请输入 B 或 C")
         sys.exit(1)
 
 
