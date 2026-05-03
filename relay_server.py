@@ -97,10 +97,6 @@ class RelayServer:
             await self.stream_queues[req_id].put(None)
 
     async def handle_api(self, request: web.Request) -> web.StreamResponse:
-        auth = request.headers.get("Authorization", "")
-        api_key = request.headers.get("x-api-key", "")
-        if auth != f"Bearer {config.AUTH_TOKEN}" and api_key != config.AUTH_TOKEN:
-            raise web.HTTPNotFound()
 
         if self.tunnel_ws is None or self.tunnel_ws.closed:
             return web.json_response(

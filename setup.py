@@ -45,10 +45,6 @@ def setup_b():
     port_str = input("监听端口 [443]: ").strip()
     port = int(port_str) if port_str else 443
 
-    auth_token = input("LLM API Key（从 LLM 服务提供人获取）: ").strip()
-    if not auth_token:
-        print("错误: LLM API Key 不能为空")
-        sys.exit(1)
     tunnel_secret = "tun-" + secrets.token_urlsafe(32)
 
     # 生成 TLS 证书
@@ -62,7 +58,6 @@ def setup_b():
         "RELAY_HOST": "0.0.0.0",
         "RELAY_PORT": str(port),
         "RELAY_ADDR": ip,
-        "AUTH_TOKEN": auth_token,
         "TUNNEL_SECRET": tunnel_secret,
         "CERT_FILE": "certs/server.crt",
         "KEY_FILE": "certs/server.key",
@@ -77,8 +72,7 @@ def setup_b():
     print(f"\n【给 C 的邀请码】:")
     print(invite_c)
     print(f"\n【给 A 的连接信息】:")
-    print(f"  服务地址: https://{ip}:{port}/anthropic")
-    print(f"  中继访问密钥: {auth_token}")
+    print(f"  ANTHROPIC_BASE_URL: https://{ip}:{port}/anthropic")
     print(f"\n启动命令: python relay_server.py")
     if port < 1024:
         print(f"注意: 端口 {port} 需要 root 权限，用 sudo python relay_server.py")

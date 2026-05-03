@@ -16,8 +16,6 @@ RELAY_PORT = int(os.environ.get("RELAY_PORT", "443"))
 # B 的公网地址（C 和 A 连这里）
 RELAY_ADDR = os.environ.get("RELAY_ADDR", "127.0.0.1")
 
-# 认证 token
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "sk-contool-default-token-change-me")
 TUNNEL_SECRET = os.environ.get("TUNNEL_SECRET", "tun-contool-default-secret-change-me")
 
 # WebSocket 路径（伪装为通知推送端点）
