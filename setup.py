@@ -88,7 +88,7 @@ def setup_c():
         print("错误: 这不是给 C 的邀请码，请使用 B 生成的 C 码。")
         sys.exit(1)
 
-    llm_url = input("内网 LLM API 地址 (如 https://10.0.1.50:8080): ").strip()
+    llm_url = input("C 网络内的 LLM API 地址 (如 https://10.0.1.50:8080): ").strip()
     if not llm_url:
         print("错误: LLM API 地址不能为空")
         sys.exit(1)
@@ -110,7 +110,7 @@ def main():
     print("=" * 40)
     print("\n选择本机角色:")
     print("  [B] claude-code-proxy（有公网 IP 的机器，第一个配置）")
-    print("  [C] 隧道客户端（公司内网机器）")
+    print("  [C] 隧道客户端（C 网络内的机器）")
     print()
 
     role = input("输入角色 (B/C): ").strip().upper()

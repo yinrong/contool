@@ -21,7 +21,7 @@ TUNNEL_SECRET = os.environ.get("TUNNEL_SECRET", "tun-contool-default-secret-chan
 # WebSocket 路径（伪装为通知推送端点）
 WS_PATH = "/ws/notifications"
 
-# 内网 LLM API 地址（C 的内网）
+# C 网络内的 LLM API 地址
 INTERNAL_LLM_BASE = os.environ.get("INTERNAL_LLM_BASE", "http://127.0.0.1:9000")
 
 # TLS 证书路径

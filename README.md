@@ -1,21 +1,21 @@
 # contool - 隐蔽 LLM API 中继（claude-code-proxy）
 
-通过中间节点，将公司内网的大模型 API 安全中继到外部，所有流量伪装为正常 HTTPS 网站访问。
+通过中间节点，将 C 网络的大模型 API 安全中继到外部，所有流量伪装为正常 HTTPS 网站访问。
 
 ## 架构
 
 ```
-A (Claude Code 客户端)      B (claude-code-proxy)           C (公司内网)
+A (Claude Code 客户端)      B (claude-code-proxy)           C (C 网络)
      │                          │                           │
      │ HTTPS 请求               │     WSS 出站连接          │
      │ /anthropic/v1/messages ► │ ◄── /ws/notifications     │
      │                          │                           │
-     │ ◄── JSON 响应 ────────── │ ──► 内网 LLM API ──────►  │
+     │ ◄── JSON 响应 ────────── │ ──► C 网络 LLM API ─────►  │
 ```
 
 - **A**：Claude Code 客户端，可以和 B 在同一台机器，也可以在任意网络
 - **B**：claude-code-proxy，需要有公网 IP（如家里的电脑），对外是普通 HTTPS 网站
-- **C**：隧道客户端，在公司内网，主动出站连接 B
+- **C**：隧道客户端，在 C 网络内，主动出站连接 B
 
 ## 配置步骤
 
@@ -27,7 +27,7 @@ A (Claude Code 客户端)      B (claude-code-proxy)           C (公司内网)
 ### 准备 B 的网络环境（已完成可跳过）
 
 1. B 需要一个指向其公网 IP 的域名（用于 TLS 证书）
-2. B 在路由器/NAT 后面时，设置端口转发：外部 8443 → B 内网 IP:8443
+2. B 在路由器/NAT 后面时，设置端口转发：外部 8443 → B 局域网 IP:8443
 3. 国内运营商封锁 80/443，使用 **8443**
 
 ### 第一步：配置 B
@@ -54,7 +54,7 @@ cd contool
 python -m venv venv
 source venv/bin/activate
 pip install aiohttp cryptography
-python setup.py          # 选择 C，粘贴邀请码，输入内网 LLM 地址
+python setup.py          # 选择 C，粘贴邀请码，输入 C 网络内的 LLM 地址
 ```
 
 ### 第三步：配置 A（Claude Code）
