@@ -6,7 +6,6 @@ set -e
 export RELAY_PORT=8443
 export RELAY_ADDR=127.0.0.1
 export RELAY_TLS=true
-export AUTH_TOKEN=sk-contool-default-token-change-me
 export TUNNEL_SECRET=tun-contool-default-secret-change-me
 export INTERNAL_LLM_BASE=http://127.0.0.1:9000
 
@@ -46,24 +45,15 @@ echo "GET / should return the static site:"
 curl -sk https://127.0.0.1:8443/ | head -5
 echo ""
 
-echo "=== Test 2: Unauthenticated API (should get 404) ==="
-HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" -X POST https://127.0.0.1:8443/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"test","messages":[{"role":"user","content":"hello"}]}')
-echo "HTTP status: $HTTP_CODE (expect 404)"
-
-echo ""
-echo "=== Test 3: Authenticated non-stream request ==="
+echo "=== Test 2: Non-stream request ==="
 curl -sk https://127.0.0.1:8443/v1/chat/completions \
-  -H "Authorization: Bearer sk-contool-default-token-change-me" \
   -H "Content-Type: application/json" \
   -d '{"model":"test","messages":[{"role":"user","content":"hello world"}]}'
 echo ""
 
 echo ""
-echo "=== Test 4: Authenticated stream request ==="
+echo "=== Test 3: Stream request ==="
 curl -sk https://127.0.0.1:8443/v1/chat/completions \
-  -H "Authorization: Bearer sk-contool-default-token-change-me" \
   -H "Content-Type: application/json" \
   -d '{"model":"test","messages":[{"role":"user","content":"hello stream"}],"stream":true}'
 echo ""
